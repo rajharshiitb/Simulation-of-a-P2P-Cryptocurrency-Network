@@ -2,7 +2,10 @@ import heapq
 class Event():
     def __init__(self,eventTime,type,fromID,toID,object):
         '''
-            -Total three types of events
+            -Total three types of events:
+                --Txn: A sends B 5 BTC
+                --Block: sends block or receives block
+                        
             -eventTime : Scheduled time of event
             -type: "Block" or "Tnx"
         '''
