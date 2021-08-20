@@ -23,3 +23,14 @@ class Node:
         genesis_block.setId()
         self.block_tree[genesis_block.getId()] = genesis_block
         pass
+    def generateTransaction():
+        pass
+    def receiveTransaction():
+        pass
+    def receiveBlock():
+        pass
+    def generateBlock():
+        pass
+    def broadcastBlock():
+        pass
+    
