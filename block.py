@@ -41,7 +41,7 @@ class Block:
             concat += (" "+trans)
         concat += (" "+self.summary)
         result = hashlib.sha256(concat.encode())
-        self.id = result
+        self.id = result.hexdigest()
         pass
     def getId(self):
         return self.id
