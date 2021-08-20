@@ -1,5 +1,6 @@
+from block import Block
 class Node:
-    def __init__(self,id,speed,init_coins,peers):
+    def __init__(self,id,speed,init_coins,peers,transactions):
         '''
         Intializes the peer with its info
             -peerId
@@ -9,7 +10,7 @@ class Node:
             -all_transaction
             -verified_transaction
             -blockchain datastructure with Genesis block
-
+            -block_tree: maintains block tree in the node
         '''
         self.id = id
         self.speed = speed
@@ -17,8 +18,8 @@ class Node:
         self.peers = peers
         self.all_transaction = [] #max-heap???
         self.verfied_transaction = []
-        #ToDo
-        '''
-        Initialize Genesis Block
-        '''
+        self.block_tree = {}
+        genesis_block = Block(creater_id=id,hash=None,chain_length=0,transactions=transactions)
+        genesis_block.setId()
+        self.block_tree[genesis_block.getId()] = genesis_block
         pass
