@@ -4,7 +4,7 @@ from random import randrange
 import numpy as np
 from event import Event
 class Node:
-    def __init__(self,id,speed,peers,transactions,mean_time):
+    def __init__(self,id,speed,peers,transactions,Tmean_time,Kmean_time):
         '''
         Intializes the peer with its info
             -peerId
@@ -20,7 +20,8 @@ class Node:
         self.speed = speed
         self.coins = randrange(21)
         self.peers = peers
-        self.mean_time = mean_time
+        self.Tmean_time = Tmean_time
+        self.Kmean_time = Kmean_time
         self.all_transaction = {} #max-heap???
         self.verfied_transaction = {}
         self.block_tree = {}
@@ -39,7 +40,7 @@ class Node:
         amount = randrange(1,self.coins+1)
         tnx = str(self.id)+" pays "+str(toID)+" "+amount+" BTC"
         Tnx = Transaction(tnx)
-        evenTime = np.random.exponential(self.mean_time,1)
+        evenTime = np.random.exponential(self.Tmean_time,1)
         return Event(evenTime,"Tnx",self.id,toID,Tnx)
     def receiveTransaction():
         pass
