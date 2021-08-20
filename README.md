@@ -1,5 +1,4 @@
 # Simulation-of-a-P2P-Cryptocurrency-Network
-# CS765 Project
 
 --Harsh Raj
 
