@@ -23,6 +23,7 @@ class Node:
         self.Tmean_time = Tmean_time
         self.Kmean_time = Kmean_time
         self.all_transaction = {} #max-heap???
+        self.non_verfied_transaction = {}
         self.verfied_transaction = {}
         self.block_tree = {}
         genesis_block = Block(creater_id=id,hash=None,chain_length=0,transactions=transactions)
@@ -41,9 +42,30 @@ class Node:
         tnx = str(self.id)+" pays "+str(toID)+" "+amount+" BTC"
         Tnx = Transaction(tnx)
         evenTime = np.random.exponential(self.Tmean_time,1)
-        return Event(evenTime,"Tnx",self.id,toID,Tnx)
-    def receiveTransaction():
-        pass
+        return Event(evenTime,"Tnx",self.id,toID,Tnx,self.id)
+    def receiveTransaction(self,Tnx,global_time):
+        events = []
+        if Tnx.TxnID in self.all_transaction.keys():
+            return
+        for peer in self.peers:
+            '''
+                peer[0] = node i
+                peer[1] = refrence to the node i
+                peer[2] = p_ij
+            '''
+            newTnx = Event(Tnx,peer)
+            delay = self.peers[2]
+            c_ij = None
+            if self.speed=="fast" and peer[1].speed=="fast":
+                c_ij = 100*1e6
+            else:
+                c_ij = 5*1e6
+            delay += (1000/c_ij)*1000 #in milliseconds
+            d_ij = np.random.exponential(((96*1000)/c_ij),1)*1000 #in milliseconds
+            delay += d_ij
+            events.append(newTnx,peer[0],global_time+delay)
+        return events
+        
     def receiveBlock():
         pass
     def generateBlock():

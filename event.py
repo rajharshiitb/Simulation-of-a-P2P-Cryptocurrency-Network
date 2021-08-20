@@ -1,6 +1,6 @@
 import heapq
 class Event():
-    def __init__(self,eventTime,type,fromID,toID,object):
+    def __init__(self,eventTime,type,fromID,toID,object,at):
         '''
             -Total three types of events:
                 --Txn: A sends B 5 BTC
@@ -11,6 +11,7 @@ class Event():
         '''
         self.eventTime = eventTime
         self.type = type
+        self.at = at
         self.fromID = fromID
         self.toID = toID
         self.message = object
