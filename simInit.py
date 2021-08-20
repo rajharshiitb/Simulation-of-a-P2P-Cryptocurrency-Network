@@ -14,6 +14,9 @@ class InitializeSimulation():
                 peer = randrange(params.N)
             slowNodes.append(peer)
         for i in range(params.N):
+            
             if i in slowNodes:
                 nodes.append(Node(id=i,speed="slow",peers = peers,Tmean_time=params.Tmean[i],Kmean_time=params.Kmean[i]))
+            else:
+                nodes.append(Node(id=i,speed="fast",peers = peers,Tmean_time=params.Tmean[i],Kmean_time=params.Kmean[i]))
         pass
