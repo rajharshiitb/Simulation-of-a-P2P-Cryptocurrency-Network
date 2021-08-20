@@ -9,6 +9,7 @@ class Block:
             -prev_block_hash: hash of prev block
             -transactions: (dict or Merkle tree???)
             -length: length of the chain it is part of
+            -summary
         '''
         self.max_size = 8*1e6
         self.actual_size = bsize
@@ -16,8 +17,19 @@ class Block:
         self.creater_id = creater_id
         self.prev_block_hash = hash
         self.transactions = {} #maybe merkel?
+        self.summary = None
         self.length = chain_length+1
-        self.id = calSHA()
+        self.id = None
         pass
-    def calSHA():
+    def calSummary():
+        '''
+        Calculates the hash of the transactions and use that
+        as summary
+        '''
+        pass
+    def setId():
+        '''
+        Find hash of the block(prev_block_hash||summary)
+        and use that as BlockID
+        '''
         pass
