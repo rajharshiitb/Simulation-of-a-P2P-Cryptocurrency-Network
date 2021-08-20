@@ -47,13 +47,15 @@ class Node:
         events = []
         if Tnx.TxnID in self.all_transaction.keys():
             return
+        tokens = Tnx.split()
+        fromID = tokens[0]
+        toID = tokens[2]
         for peer in self.peers:
             '''
                 peer[0] = node i
                 peer[1] = refrence to the node i
                 peer[2] = p_ij
             '''
-            newTnx = Event(Tnx,peer)
             delay = self.peers[2]
             c_ij = None
             if self.speed=="fast" and peer[1].speed=="fast":
@@ -63,7 +65,7 @@ class Node:
             delay += (1000/c_ij)*1000 #in milliseconds
             d_ij = np.random.exponential(((96*1000)/c_ij),1)*1000 #in milliseconds
             delay += d_ij
-            events.append(newTnx,peer[0],global_time+delay)
+            events.append(Event(global_time+delay,"Tnx",fromID,toID,Tnx,peer[0]))
         return events
         
     def receiveBlock():
