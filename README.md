@@ -109,6 +109,3 @@ time t
 	- dictionary {block_hash: block_object, receive time}
 
 
-
-### TODO
-- how to verify a mining fee transaction
