@@ -1,6 +1,6 @@
 import hashlib
 class Block:
-    def __init__(self,creater_id,hash,chain_length,transactions):
+    def __init__(self,creater_id,hash,chain_length,transactions,global_time):
         '''
             -max_size = 8*1e6 bits
             -actual_size

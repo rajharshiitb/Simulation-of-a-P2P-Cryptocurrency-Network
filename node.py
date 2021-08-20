@@ -1,6 +1,8 @@
 from block import Block
 from transaction import Transaction
 from random import randrange
+import numpy as np
+from event import Event
 class Node:
     def __init__(self,id,speed,init_coins,peers,transactions,mean_time):
         '''
@@ -29,6 +31,7 @@ class Node:
     def generateTransaction(self, N):
         '''
             Take input total number of peers: N
+            Returns an object of Event pointing to Tnx type event
         '''
         toID = self.id
         while(toID==self.id):
@@ -36,7 +39,8 @@ class Node:
         amount = randrange(1,self.coins+1)
         tnx = str(self.id)+" pays "+str(toID)+" "+amount+" BTC"
         Tnx = Transaction(tnx)
-        return Tnx
+        evenTime = np.random.exponential(self.mean_time,1)
+        return Event(evenTime,"Tnx",self.id,toID,Tnx)
     def receiveTransaction():
         pass
     def receiveBlock():
