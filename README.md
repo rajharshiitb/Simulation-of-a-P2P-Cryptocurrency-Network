@@ -1,7 +1,7 @@
 # Simulation-of-a-P2P-Cryptocurrency-Network
 This was part of CS765 assignment at IIT Bombay
 This project was done in the group.
-
+//check push
 The cryptocurrency network must have the following properties.<br /><br />
 1. There are “n” peers, where “n” is set at the time of initiation of the network. Some of these nodes (say z% set at the start of the simulation) are labeled “slow” and the others “fast”. We will use this classification below.<br /><br />
 2. Each peer has a unique ID.<br /><br />
