@@ -4,7 +4,7 @@ from random import randrange
 import numpy as np
 from event import Event
 class Node:
-    def __init__(self,id,speed,init_coins,peers,transactions,mean_time):
+    def __init__(self,id,speed,peers,transactions,mean_time):
         '''
         Intializes the peer with its info
             -peerId
@@ -18,7 +18,7 @@ class Node:
         '''
         self.id = id
         self.speed = speed
-        self.coins = init_coins
+        self.coins = randrange(21)
         self.peers = peers
         self.mean_time = mean_time
         self.all_transaction = {} #max-heap???
