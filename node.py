@@ -47,6 +47,7 @@ class Node:
         events = []
         if Tnx.TxnID in self.all_transaction.keys():
             return
+        self.non_verfied_transaction = self.all_transaction[Tnx] = 1
         tokens = Tnx.split()
         fromID = tokens[0]
         toID = tokens[2]
