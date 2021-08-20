@@ -1,3 +1,4 @@
+import heapq
 class Event():
     def __init__(self,eventTime,type,fromID,toID,object):
         '''
@@ -11,3 +12,16 @@ class Event():
         self.toID = toID
         self.message = object
         pass
+    def __lt__(self,other):
+        return self.eventTime<other.eventTime
+class EventQueue():
+    def __init__(self):
+        '''
+            -minq maintains events in minheap order
+        '''
+        self.minq = []
+    def push(self,event):
+        heapq.heappush(self.minq,event)
+        pass
+    def pop(self):
+        return heapq.heappop(self.minq)
