@@ -7,7 +7,7 @@ class Event():
                 --Block: sends block or receives block
                         
             -eventTime : Scheduled time of event
-            -type: "Block" or "Tnx"
+            -type: "Block" or "Txn"
             -use of at:
                 Ea is being executed
                 generate new event for node a when at==fromID

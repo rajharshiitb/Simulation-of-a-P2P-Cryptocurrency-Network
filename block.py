@@ -23,9 +23,9 @@ class Block:
         Calculates the hash of the transactions (Tnx) and use that
         as summary
         '''
-        concat_transaction = self.transactions[0].Tnx
+        concat_transaction = self.transactions[0].Tnx_msg
         for trans in self.transactions[1:-1]:
-            concat_transaction += (" "+trans.Tnx)
+            concat_transaction += (" "+trans.Tnx_msg)
         result = hashlib.sha256(concat_transaction.encode())
         self.summary = result.hexdigest()
         pass

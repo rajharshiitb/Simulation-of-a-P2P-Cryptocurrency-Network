@@ -16,7 +16,13 @@ class Transaction():
         self.fromID = None
         self.toID = None
         self.coins = None
-        if tokens[1]=="mines":
+        if tokens[1]=="init":
+            #Used for initilazing the node with initial fund
+            #IDx init 10 BTC
+            self.fromID = "coinbase"
+            self.toID = tokens[0]
+            self.coins = tokens[2]
+        elif tokens[1]=="mines":
             #IDx mines 10 BTC
             self.fromID = "coinbase"
             self.toID = tokens[0]

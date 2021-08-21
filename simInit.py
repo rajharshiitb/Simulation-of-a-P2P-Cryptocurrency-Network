@@ -1,3 +1,4 @@
+from transaction import Transaction
 from node import Node
 from parameters import SimulatorParameter
 from random import random, randrange
@@ -13,6 +14,13 @@ class InitializeSimulation():
         #calculate total slow nodes
         totalSlow = int(self.params.z*self.params.N)
         slowNodes = []
+        #Create Initial Money/Transaction to each Node
+        init_money = [randrange(1,15) for i in range(self.params.N)]
+        init_Txn = []
+        for id in range(self.params.N):
+            #1 init 10 BTC
+            Txn_msg = str(id)+" init "+str(init_money[id])+" BTC"
+            init_Txn.append(Transaction(Txn_msg,self.params.global_time))
         #Find NodeID of the slow Nodes and save in slowNodes
         for i in range(totalSlow):
             peer = randrange(self.params.N)
@@ -22,9 +30,9 @@ class InitializeSimulation():
         #Create self.params.N nodes in the simulation
         for i in range(self.params.N):
             if i in slowNodes:
-                self.nodes.append(Node(id=i,speed="slow",Tmean_time=self.params.Tmean[i],Kmean_time=self.params.Kmean[i]))
+                self.nodes.append(Node(id=i,speed="slow",transactions=init_Txn,Tmean_time=self.params.Tmean[i],Kmean_time=self.params.Kmean[i]))
             else:
-                self.nodes.append(Node(id=i,speed="fast",Tmean_time=self.params.Tmean[i],Kmean_time=self.params.Kmean[i]))
+                self.nodes.append(Node(id=i,speed="fast",transactions=init_Txn,Tmean_time=self.params.Tmean[i],Kmean_time=self.params.Kmean[i]))
         #Now we create the graph
         #First we create the adj matrix and a cell is 1 if it has prbability >=0.3
         adjMatrix = [[int(randrange(0,1)>=0.3) for i in range(self.params.N)] for j in range(self.params.N)]

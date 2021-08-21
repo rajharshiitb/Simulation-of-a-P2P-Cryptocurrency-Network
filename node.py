@@ -11,7 +11,7 @@ class Node:
             -speed
             -coins
             -peers: adjacent_peers
-            -all_transaction
+            -all_transaction: <TxnID: Txn object>
             -non_verified_transaction
             -verified_transaction
             -blockchain datastructure with Genesis block
@@ -43,11 +43,11 @@ class Node:
         while(toID==self.id):
             toID = randrange(N)
         amount = randrange(1,self.coins+1)
-        tnx = str(self.id)+" pays "+str(toID)+" "+amount+" BTC"
+        Txn_msg = str(self.id)+" pays "+str(toID)+" "+amount+" BTC"
         evenTime = global_time+np.random.exponential(self.Tmean_time,1)
-        Tnx = Transaction(tnx,evenTime)
-        return Event(evenTime,"Tnx",self.id,toID,Tnx,self.id)
-    def receiveTransaction(self,Tnx,global_time):
+        Txn = Transaction(Txn_msg,evenTime)
+        return Event(evenTime,"Txn",self.id,toID,Txn,self.id)
+    def receiveTransaction(self,Txn,global_time):
         '''
             Input: 
                 Tnx: An object of Transaction
@@ -56,10 +56,10 @@ class Node:
 
         '''
         events = []
-        if Tnx.TxnID in self.all_transaction.keys():
+        if Txn.TxnID in self.all_transaction.keys():
             return
-        self.non_verfied_transaction[Tnx.TxnID] = self.all_transaction[Tnx.TnxID] = Tnx
-        tokens = Tnx.Txn_msg.split()
+        self.non_verfied_transaction[Txn.TxnID] = self.all_transaction[Txn.TnxID] = Txn
+        tokens = Txn.Txn_msg.split()
         fromID = tokens[0]
         toID = tokens[2]
         for peer in self.peers:
@@ -77,7 +77,7 @@ class Node:
             delay += (1000/c_ij)*1000 #in milliseconds
             d_ij = np.random.exponential(((96*1000)/c_ij),1)*1000 #in milliseconds
             delay += d_ij
-            events.append(Event(global_time+delay,"Tnx",fromID,toID,Tnx,peer[0]))
+            events.append(Event(global_time+delay,"Txn",fromID,toID,Txn,peer[0]))
         return events
         
     def receiveBlock():
