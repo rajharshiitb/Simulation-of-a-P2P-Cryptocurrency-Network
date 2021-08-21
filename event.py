@@ -8,6 +8,9 @@ class Event():
                         
             -eventTime : Scheduled time of event
             -type: "Block" or "Tnx"
+            -use of at:
+                Ea is being executed
+                generate new event for node a when at==fromID
         '''
         self.eventTime = eventTime
         self.type = type

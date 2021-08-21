@@ -4,7 +4,7 @@ from random import randrange
 import numpy as np
 from event import Event
 class Node:
-    def __init__(self,id,speed,peers,transactions,Tmean_time,Kmean_time):
+    def __init__(self,id,speed,transactions,Tmean_time,Kmean_time):
         '''
         Intializes the peer with its info
             -peerId
@@ -12,6 +12,7 @@ class Node:
             -coins
             -peers: adjacent_peers
             -all_transaction
+            -non_verified_transaction
             -verified_transaction
             -blockchain datastructure with Genesis block
             -block_tree: maintains block tree in the node
@@ -19,18 +20,21 @@ class Node:
         self.id = id
         self.speed = speed
         self.coins = randrange(21)
-        self.peers = peers
+        self.peers = None
         self.Tmean_time = Tmean_time
         self.Kmean_time = Kmean_time
         self.all_transaction = {} #max-heap???
         self.non_verfied_transaction = {}
         self.verfied_transaction = {}
         self.block_tree = {}
-        genesis_block = Block(creater_id=id,hash=None,chain_length=0,transactions=transactions)
+        genesis_block = Block(creater_id=id,hash=0,chain_length=0,transactions=transactions)
+        genesis_block.calSummary()
         genesis_block.setId()
         self.block_tree[genesis_block.getId()] = genesis_block
         pass
-    def generateTransaction(self, N):
+    def setPeer(self,peer):
+        self.peers = peer
+    def generateTransaction(self, N,global_time):
         '''
             Take input total number of peers: N
             Returns an object of Event pointing to Tnx type event
@@ -41,13 +45,18 @@ class Node:
         amount = randrange(1,self.coins+1)
         tnx = str(self.id)+" pays "+str(toID)+" "+amount+" BTC"
         Tnx = Transaction(tnx)
-        evenTime = np.random.exponential(self.Tmean_time,1)
+        evenTime = global_time+np.random.exponential(self.Tmean_time,1)
         return Event(evenTime,"Tnx",self.id,toID,Tnx,self.id)
     def receiveTransaction(self,Tnx,global_time):
+        '''
+            Eg:
+                Tnx at Node A and peers of Node A are: B,D,E
+
+        '''
         events = []
         if Tnx.TxnID in self.all_transaction.keys():
             return
-        self.non_verfied_transaction = self.all_transaction[Tnx] = 1
+        self.non_verfied_transaction = self.all_transaction[Tnx] = Tnx
         tokens = Tnx.split()
         fromID = tokens[0]
         toID = tokens[2]
