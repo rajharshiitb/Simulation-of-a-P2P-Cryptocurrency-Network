@@ -16,7 +16,7 @@ class Block:
         self.transactions = transactions #maybe merkel?
         self.summary = None
         self.length = chain_length+1
-        self.id = None
+        self.id = self.setId()
         pass
     def calSummary(self):
         '''
@@ -34,6 +34,7 @@ class Block:
         Find hash of the block(prev_block_hash||summary)
         and use that as BlockID
         '''
+        self.calSummary()
         concat = self.prev_block_hash
         concat += (" "+self.summary)
         result = hashlib.sha256(concat.encode())
