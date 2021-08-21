@@ -44,11 +44,13 @@ class Node:
             toID = randrange(N)
         amount = randrange(1,self.coins+1)
         tnx = str(self.id)+" pays "+str(toID)+" "+amount+" BTC"
-        Tnx = Transaction(tnx)
         evenTime = global_time+np.random.exponential(self.Tmean_time,1)
+        Tnx = Transaction(tnx,evenTime)
         return Event(evenTime,"Tnx",self.id,toID,Tnx,self.id)
     def receiveTransaction(self,Tnx,global_time):
         '''
+            Input: 
+                Tnx: An object of Transaction
             Eg:
                 Tnx at Node A and peers of Node A are: B,D,E
 
@@ -56,8 +58,8 @@ class Node:
         events = []
         if Tnx.TxnID in self.all_transaction.keys():
             return
-        self.non_verfied_transaction = self.all_transaction[Tnx] = Tnx
-        tokens = Tnx.split()
+        self.non_verfied_transaction[Tnx.TxnID] = self.all_transaction[Tnx.TnxID] = Tnx
+        tokens = Tnx.Txn_msg.split()
         fromID = tokens[0]
         toID = tokens[2]
         for peer in self.peers:
@@ -66,7 +68,7 @@ class Node:
                 peer[1] = refrence to the node i
                 peer[2] = p_ij
             '''
-            delay = self.peers[2]
+            delay = peer[2]
             c_ij = None
             if self.speed=="fast" and peer[1].speed=="fast":
                 c_ij = 100*1e6

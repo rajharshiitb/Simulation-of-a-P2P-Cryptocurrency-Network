@@ -11,6 +11,7 @@ class Event():
             -use of at:
                 Ea is being executed
                 generate new event for node a when at==fromID
+            -messgae: contains object of the Transaction
         '''
         self.eventTime = eventTime
         self.type = type

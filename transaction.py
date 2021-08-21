@@ -1,8 +1,8 @@
 import hashlib
 class Transaction():
-    def __init__(self, Txn, timestamp):
+    def __init__(self, Txn_msg, timestamp):
         '''
-            -Tnx: IDx sends IDy 10 BTC
+            -Txn_msg: IDx sends IDy 10 BTC
             -timestamp: maintains Tnx creation time
             -fromID: Node that created the Tnx
             -toID: Dest Node ID
@@ -10,9 +10,9 @@ class Transaction():
             -TnxID: Hash of (Tnx||timestamp)
                 makes it unique
         ''' 
-        self.Txn = Txn
+        self.Txn_msg = Txn_msg
         self.timestamp = timestamp
-        tokens = Txn.split()
+        tokens = Txn_msg.split()
         self.fromID = None
         self.toID = None
         self.coins = None
@@ -26,7 +26,7 @@ class Transaction():
             self.fromID = tokens[0]
             self.toID = tokens[2]
             self.coins = tokens[3]
-        self.TxnID = self.setID(Txn,timestamp)
+        self.TxnID = self.setID(Txn_msg,timestamp)
         pass
     def setID(self, Txn, timestamp):
         concat_tnx = Txn+" "+str(timestamp)
