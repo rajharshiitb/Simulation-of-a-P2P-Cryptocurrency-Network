@@ -19,6 +19,7 @@ class Node:
                 <BlockID: (BlockObject,chain_length)>
             -tails: maintains leaf blocks, dict type:
                 <BlockID: (BlockObject, chain_length)>
+            -curr_mining_time: Time at which the node will sucessfully mine a block
         '''
         self.id = id
         self.speed = speed
@@ -35,7 +36,10 @@ class Node:
         genesis_block = Block(creater_id=id,hash=0,transactions=transactions)
         self.block_tree[genesis_block.getId()] = (genesis_block,1)
         self.tails[genesis_block.getId()] = (genesis_block,1)
+        self.curr_mining_time = None
         pass
+    def setMiningTime(self,init_mining_time):
+        self.curr_mining_time = init_mining_time
     def setPeer(self,peer):
         self.peers = peer
     def generateTransaction(self, N,global_time):
@@ -90,6 +94,8 @@ class Node:
         if block.id in self.all_block_ids.keys():
             return []
         self.all_block_ids[block.id] = 1
+        #Since curr node has not not mined, hence update curr_mining_time
+        self.curr_mining_time = global_time+np.random.exponential(self.Kmean_time,1)
         #Verify all transaction stored in the received block
         under_verification_tnx = {} 
         at = self.block_tree[block.prev_block_hash][0]
