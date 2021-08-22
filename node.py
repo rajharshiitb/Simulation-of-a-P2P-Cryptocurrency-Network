@@ -94,8 +94,6 @@ class Node:
         if block.id in self.all_block_ids.keys():
             return []
         self.all_block_ids[block.id] = 1
-        #Since curr node has not not mined, hence update curr_mining_time
-        self.curr_mining_time = global_time+np.random.exponential(self.Kmean_time,1)
         #Verify all transaction stored in the received block
         under_verification_tnx = {} 
         at = self.block_tree[block.prev_block_hash][0]
@@ -130,9 +128,16 @@ class Node:
         else:
             self.tails[block.getId()] = (block,self.tails[block.prev_block_hash][1]+1)
         #Now broadcast the block to the neighbours 
-        self.broadcastBlock(block,global_time)
+        return self.broadcastBlock(block,global_time)
         pass
-    def generateBlock(self):
+    def generateBlock(self,event):
+        #If curr_mine_time != event.eventTime then it means node recerived block before it's own mining can be finished and hence started POW again
+        #In this case just return, as this is false mining event
+        if self.curr_mining_time!=event.eventTime:
+            return []
+        #Now that it is confirmed curr Node has sucessfully mined the block
+        #We verify the transactions and put in the block and call broadcast it
+
         pass
     def broadcastBlock(self,block,global_time):
         events = []
@@ -154,6 +159,10 @@ class Node:
             d_ij = np.random.exponential(((96*1000)/c_ij),1)*1000 #in milliseconds
             delay += d_ij
             events.append(Event(global_time+delay,"Block",fromID,toID,block,peer[0]))
-            return events
+        #Create new mining_time in both false and true mining event
+        self.curr_mining_time = global_time+np.random.exponential(self.Kmean_time,1)
+        #create New mining event for the node as per current mining time
+        events.append(Event(self.curr_mining_time,"Block",self.id,"all",None,self.id))
+        return events
         pass
     
