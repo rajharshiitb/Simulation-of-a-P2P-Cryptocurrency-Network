@@ -1,13 +1,13 @@
 import hashlib
 from os import stat
 class Block:
-    def __init__(self,creater_id,hash,chain_length,transactions,timestamp):
+    def __init__(self,creater_id,hash,transactions,timestamp):
         '''
             -id: use SHA-256 hash
             -timestamp: creation time
             -creater_id: node which created this
             -prev_block_hash: hash of prev block
-            -transactions: (dict or Merkle tree???)
+            -transactions: (list of Transaction objects or Merkle tree???)
             -length: length of the chain it is part of
             -summary
         '''
@@ -16,7 +16,6 @@ class Block:
         self.prev_block_hash = hash
         self.transactions = transactions #maybe merkel?
         self.summary = None
-        self.length = chain_length+1
         self.id = self.setId()
         pass
     def calSummary(self):
