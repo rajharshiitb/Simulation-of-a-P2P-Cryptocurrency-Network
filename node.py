@@ -11,8 +11,8 @@ class Node:
             -speed
             -coins
             -peers: adjacent_peers
-            -all_transaction: <TxnID: Txn object>
-            -non_verified_transaction
+            -all_transaction: <TxnID: 1/0>
+            -non_verified_transaction: <TxnID: TxnObject>
             -verified_transaction
             -blockchain datastructure with Genesis block
             -block_tree: maintains block tree in the node
@@ -29,6 +29,7 @@ class Node:
         self.all_transaction = {} #max-heap???
         self.non_verfied_transaction = {}
         self.verfied_transaction = {}
+        self.all_block_ids = {}
         self.block_tree = {}
         self.tails={}
         genesis_block = Block(creater_id=id,hash=0,transactions=transactions)
@@ -61,7 +62,8 @@ class Node:
         events = []
         if Txn.TxnID in self.all_transaction.keys():
             return
-        self.non_verfied_transaction[Txn.TxnID] = self.all_transaction[Txn.TnxID] = Txn
+        self.non_verfied_transaction[Txn.TxnID] = Txn
+        self.all_transaction[Txn.TnxID] = 1
         tokens = Txn.Txn_msg.split()
         fromID = tokens[0]
         toID = tokens[2]
@@ -84,6 +86,10 @@ class Node:
         return events
         
     def receiveBlock(self,block,global_time):
+        #If block already seen, prevent loop
+        if block.id in self.all_block_ids.keys():
+            return []
+        self.all_block_ids[block.id] = 1
         #Verify all transaction stored in the received block
         under_verification_tnx = {} 
         at = self.block_tree[block.prev_block_hash][0]
@@ -107,7 +113,7 @@ class Node:
         for amount in under_verification_tnx.values():
             if amount<0:
                 #Illegal Block
-                return self.broadcastBlock()
+                return self.broadcastBlock(block,global_time)
         #Now that we have verified the block, add the block in the block_tree
         #If prev_block_hash is present in tails then
         #replace the tail with block 
@@ -117,10 +123,31 @@ class Node:
             del self.tails[block.prev_block_hash]
         else:
             self.tails[block.getId()] = (block,self.tails[block.prev_block_hash][1]+1)
-
+        #Now broadcast the block to the neighbours 
+        self.broadcastBlock(block,global_time)
         pass
     def generateBlock(self):
         pass
-    def broadcastBlock():
+    def broadcastBlock(self,block,global_time):
+        events = []
+        fromID = block.creater_id
+        toID = "all"
+        for peer in self.peers:
+            '''
+                peer[0] = node i
+                peer[1] = refrence to the node i
+                peer[2] = p_ij
+            '''
+            delay = peer[2]
+            c_ij = None
+            if self.speed=="fast" and peer[1].speed=="fast":
+                c_ij = 100*1e6
+            else:
+                c_ij = 5*1e6
+            delay += (1000/c_ij)*1000 #in milliseconds
+            d_ij = np.random.exponential(((96*1000)/c_ij),1)*1000 #in milliseconds
+            delay += d_ij
+            events.append(Event(global_time+delay,"Block",fromID,toID,block,peer[0]))
+            return events
         pass
     
