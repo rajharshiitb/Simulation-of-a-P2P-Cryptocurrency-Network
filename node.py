@@ -28,7 +28,6 @@ class Node:
         self.verfied_transaction = {}
         self.block_tree = {}
         genesis_block = Block(creater_id=id,hash=0,chain_length=0,transactions=transactions)
-        genesis_block.setState()
         self.block_tree[genesis_block.getId()] = genesis_block
         pass
     def setPeer(self,peer):
@@ -80,6 +79,7 @@ class Node:
         return events
         
     def receiveBlock(self,block,global_time):
+        prev_block_hash = block.prev_block_hash
 
         pass
     def generateBlock(self):

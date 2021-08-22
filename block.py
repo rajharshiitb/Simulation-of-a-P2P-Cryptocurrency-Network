@@ -18,33 +18,7 @@ class Block:
         self.summary = None
         self.length = chain_length+1
         self.id = self.setId()
-        self.commited_state = None
         pass
-    def setState(self,prev_block=None):
-        '''
-            Contains final financial state of each node so far 
-            Two case:
-                1. Block is Genesis Block (prev_block_hash==0)
-                2. Normal Block
-        '''
-        if self.prev_block_hash==0:
-            state=[0 for i in range(len(self.transactions))]
-            for Txn in self.transactions:
-                id = Txn.toID
-                state[id] = Txn.coins
-            self.commited_state = state
-        else:
-            state = prev_block.commited_state
-            for Txn in self.transactions:
-                fromID = Txn.fromID
-                toID = Txn.toID
-                coins = Txn.coins
-                if fromID == "mines":
-                    state[toID] += coins
-                else:
-                    state[fromID] += coins
-                    state[toID] -= coins
-            self.commited_state = state
     def calSummary(self):
         '''
         Calculates the hash of the transactions (Tnx) and use that
