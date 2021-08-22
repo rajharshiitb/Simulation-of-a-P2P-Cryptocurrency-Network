@@ -16,6 +16,9 @@ class Node:
             -verified_transaction
             -blockchain datastructure with Genesis block
             -block_tree: maintains block tree in the node
+                <BlockID: (BlockObject,chain_length)>
+            -tails: maintains leaf blocks, dict type:
+                <BlockID: (BlockObject, chain_length)>
         '''
         self.id = id
         self.speed = speed
@@ -27,8 +30,10 @@ class Node:
         self.non_verfied_transaction = {}
         self.verfied_transaction = {}
         self.block_tree = {}
-        genesis_block = Block(creater_id=id,hash=0,chain_length=0,transactions=transactions)
-        self.block_tree[genesis_block.getId()] = genesis_block
+        self.tails={}
+        genesis_block = Block(creater_id=id,hash=0,transactions=transactions)
+        self.block_tree[genesis_block.getId()] = (genesis_block,1)
+        self.tails[genesis_block.getId()] = (genesis_block,1)
         pass
     def setPeer(self,peer):
         self.peers = peer
@@ -79,7 +84,39 @@ class Node:
         return events
         
     def receiveBlock(self,block,global_time):
-        prev_block_hash = block.prev_block_hash
+        #Verify all transaction stored in the received block
+        under_verification_tnx = {} 
+        at = self.block_tree[block.prev_block_hash][0]
+        while True:
+            Txns = at.transactions
+            for Txn in Txns:
+                if Txn.fromID!="coinbase":
+                    if Txn.fromID in under_verification_tnx.keys():
+                        under_verification_tnx[Txn.fromID] -= Txn.coins
+                    else:
+                        under_verification_tnx[Txn.fromID] = 0-Txn.coins  
+                if Txn.toId in under_verification_tnx.keys():
+                        under_verification_tnx[Txn.toID] += Txn.coins
+                else:
+                    under_verification_tnx[Txn.toID] = Txn.coins
+            #Break the loop once Genesis Block reached
+            if at.prev_block_hash==0:
+                break
+            at = self.block_tree[at.prev_block_hash][0]
+        #Verification Process
+        for amount in under_verification_tnx.values():
+            if amount<0:
+                #Illegal Block
+                return self.broadcastBlock()
+        #Now that we have verified the block, add the block in the block_tree
+        #If prev_block_hash is present in tails then
+        #replace the tail with block 
+        #else create new branch and add block to the leaf
+        if block.prev_block_hash in self.tails.keys():
+            self.tails[block.getId()] = (block,self.tails[block.prev_block_hash][1]+1)
+            del self.tails[block.prev_block_hash]
+        else:
+            self.tails[block.getId()] = (block,self.tails[block.prev_block_hash][1]+1)
 
         pass
     def generateBlock(self):
