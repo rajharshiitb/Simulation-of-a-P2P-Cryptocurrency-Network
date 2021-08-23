@@ -35,6 +35,7 @@ class Node:
         self.block_tree[genesis_block.getId()] = (genesis_block,1)
         self.tails[genesis_block.getId()] = (genesis_block,1)
         self.curr_mining_time = None
+        self.longest_chain = (genesis_block,1)
         pass
     def setMiningTime(self,init_mining_time):
         self.curr_mining_time = init_mining_time
@@ -94,6 +95,7 @@ class Node:
         self.all_block_ids[block.id] = 1
         #Verify all transaction stored in the received block
         under_verification_tnx = {} 
+        events = []
         at = self.block_tree[block.prev_block_hash][0]
         while True:
             Txns = at.transactions
@@ -125,20 +127,66 @@ class Node:
             del self.tails[block.prev_block_hash]
         else:
             self.tails[block.getId()] = (block,self.tails[block.prev_block_hash][1]+1)
+        #If longest_chain has been changed by adding current block
+        if self.longest_chain[1]<self.tails[block.getId()][1]:
+            #Create new mining_time in both false and true mining event
+            self.curr_mining_time = global_time+np.random.exponential(self.Kmean_time,1)
+            #create New mining event for the node as per current mining time
+            events.append(Event(self.curr_mining_time,"Block",self.id,"all",None,self.id))
+            self.longest_chain = self.tails[block.getId()]
         #Now broadcast the block to the neighbours 
-        return self.broadcastBlock(block,global_time)
+        return self.broadcastBlock(block,global_time,events)
         pass
-    def generateBlock(self,event):
+    def generateBlock(self,event,global_time):
         #If curr_mine_time != event.eventTime then it means node recerived block before it's own mining can be finished and hence started POW again
         #In this case just return, as this is false mining event
         if self.curr_mining_time!=event.eventTime:
             return []
+        events = []
+        #Genrate New block_mine event
+        #Create new mining_time in both false and true mining event
+        self.curr_mining_time = global_time+np.random.exponential(self.Kmean_time,1)
+        #create New mining event for the node as per current mining time
+        events.append(Event(self.curr_mining_time,"Block",self.id,"all",None,self.id))
         #Now that it is confirmed curr Node has sucessfully mined the block
         #We verify the transactions and put in the block and call broadcast it
-        
-        pass
-    def broadcastBlock(self,block,global_time):
-        events = []
+        verified_Txns = []
+        #calculate the Transaction state till last block in the longest chain
+        Txn_state = {} 
+        at = self.longest_chain[0]
+        while True:
+            Txns = at.transactions
+            for Txn in Txns:
+                if Txn.fromID!="coinbase":
+                    if Txn.fromID in Txn_state.keys():
+                        Txn_state[Txn.fromID] -= Txn.coins
+                    else:
+                        Txn_state[Txn.fromID] = 0-Txn.coins  
+                if Txn.toId in Txn_state.keys():
+                        Txn_state[Txn.toID] += Txn.coins
+                else:
+                    Txn_state[Txn.toID] = Txn.coins
+            #Break the loop once Genesis Block reached
+            if at.prev_block_hash==0:
+                break
+            at = self.block_tree[at.prev_block_hash][0]
+        count = 0
+        #Find valid transactions to put inside the block
+        TxnIDs = self.non_verfied_transaction.keys()
+        for TxnID in TxnIDs:
+            count += 1
+            Txn = self.non_verfied_transaction[TxnID]
+            if Txn.fromID != "coinbase":
+                if Txn_state[Txn.fromID] < Txn.coins:
+                    continue
+                Txn_state[Txn.fromID] -= Txn.coins
+            Txn_state[Txn.toID] += Txn.coins
+            verified_Txns.append(Txn)
+            if count>=900 or len(self.non_verfied_transaction)<=0:
+                break
+        block = Block(self.id,self.longest_chain[0].id,verified_Txns,event.eventTime)
+        return self.broadcastBlock(block,global_time,events)
+    def broadcastBlock(self,block,global_time,events):
         fromID = block.creater_id
         toID = "all"
         for peer in self.peers:
@@ -157,10 +205,6 @@ class Node:
             d_ij = np.random.exponential(((96*1000)/c_ij),1)*1000 #in milliseconds
             delay += d_ij
             events.append(Event(global_time+delay,"Block",fromID,toID,block,peer[0]))
-        #Create new mining_time in both false and true mining event
-        self.curr_mining_time = global_time+np.random.exponential(self.Kmean_time,1)
-        #create New mining event for the node as per current mining time
-        events.append(Event(self.curr_mining_time,"Block",self.id,"all",None,self.id))
         return events
         pass
     
