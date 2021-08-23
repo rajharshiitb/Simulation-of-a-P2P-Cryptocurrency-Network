@@ -11,3 +11,10 @@ while(some termination condition):
         else:
             nodes[event.at].receiveBlock(event.message,global_time)
 '''
+
+from simInit import InitializeSimulation
+
+
+if __name__=="__main__":
+    simulator = InitializeSimulation('config.txt')
+    

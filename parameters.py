@@ -8,7 +8,6 @@ class SimulatorParameter():
         self.z = None
         self.Tmean = []
         self.Kmean = []
-        self.global_time = 0
         pass
     def populateParams(self,path):
         '''

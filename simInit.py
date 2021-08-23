@@ -14,6 +14,7 @@ class InitializeSimulation():
         self.params = SimulatorParameter()
         self.params.populateParams(path)
         self.nodes = []
+        self.global_time = 0
         #calculate total slow nodes
         totalSlow = int(self.params.z*self.params.N)
         slowNodes = []
