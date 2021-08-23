@@ -8,6 +8,7 @@ class SimulatorParameter():
         self.z = None
         self.Tmean = []
         self.Kmean = []
+        self.termination_time = None
         pass
     def populateParams(self,path):
         '''
@@ -35,6 +36,10 @@ class SimulatorParameter():
             elif count==4:
                 mean = line.split()
                 self.Kmean = [int(x) for x in mean]
+                count += 1
+                continue
+            elif count==5:
+                self.termination_time = int(line)
                 break
         pass
             
