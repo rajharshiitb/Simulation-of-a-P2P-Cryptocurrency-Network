@@ -13,7 +13,6 @@ class Node:
             -peers: adjacent_peers
             -all_transaction: <TxnID: 1/0>
             -non_verified_transaction: <TxnID: TxnObject>
-            -verified_transaction
             -blockchain datastructure with Genesis block
             -block_tree: maintains block tree in the node
                 <BlockID: (BlockObject,chain_length)>
@@ -29,7 +28,6 @@ class Node:
         self.Kmean_time = Kmean_time
         self.all_transaction = {} #max-heap???
         self.non_verfied_transaction = {}
-        self.verfied_transaction = {}
         self.all_block_ids = {}
         self.block_tree = {}
         self.tails={}
@@ -137,7 +135,7 @@ class Node:
             return []
         #Now that it is confirmed curr Node has sucessfully mined the block
         #We verify the transactions and put in the block and call broadcast it
-
+        
         pass
     def broadcastBlock(self,block,global_time):
         events = []
