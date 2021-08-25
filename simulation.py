@@ -18,9 +18,8 @@ from simInit import InitializeSimulation
 
 if __name__=="__main__":
     simulator = InitializeSimulation('config.txt')
-    q = EventQueue()
     while(simulator.params.termination_time>simulator.global_time):
-        event = q.pop()
+        event = simulator.q.pop()
         simulator.global_time = event.eventTime
         if event.type=="Tnx":
             new_events = simulator.nodes[event.at].receiveTransaction(event.message,simulator.global_time)
@@ -32,4 +31,4 @@ if __name__=="__main__":
             else:
                 new_events = simulator.nodes[event.at].receiveBlock(event.message,simulator.global_time)
         for each_event in new_events:
-            q.push(each_event)
+            simulator.q.push(each_event)

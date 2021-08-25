@@ -2,6 +2,8 @@ from transaction import Transaction
 from node import Node
 from parameters import SimulatorParameter
 from random import random, randrange
+from event import EventQueue, Event
+import numpy as np
 class InitializeSimulation():
     def __init__(self, path):
         '''
@@ -15,6 +17,7 @@ class InitializeSimulation():
         self.params.populateParams(path)
         self.nodes = []
         self.global_time = 0
+        self.q = EventQueue()
         #calculate total slow nodes
         totalSlow = int(self.params.z*self.params.N)
         slowNodes = []
@@ -65,5 +68,13 @@ class InitializeSimulation():
                     temp.append(randrange(10,501))
                 peer.append(temp)
             self.nodes[id].setPeer(peer)
-        
+        #Create Initial Tnx Event for each Node
+        for id in range(self.params.N):
+            self.q.push(self.nodes[id].generateTransaction(self.params.N,self.global_time))
+        #create initial Block Event
+        for id in range(self.params.N):
+            mining_time = self.global_time+np.random.exponential(self.nodes[id].Kmean_time,1)
+            #create New mining event for the node as per current mining time
+            self.q.push(Event(mining_time,"Block",id,"all",None,id))
+            self.nodes[id].setMiningTime(mining_time)
         pass
