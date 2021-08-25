@@ -89,6 +89,9 @@ class Node:
         return events
         
     def receiveBlock(self,block,global_time):
+        '''
+        Issue occurs when parent not found. Tackle it
+        '''
         #If block already seen, prevent loop
         if block.id in self.all_block_ids.keys():
             return []
