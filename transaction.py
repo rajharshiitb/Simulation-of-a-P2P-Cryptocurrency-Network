@@ -21,22 +21,22 @@ class Transaction():
             #IDx init 10 BTC
             self.fromID = "coinbase"
             self.toID = tokens[0]
-            self.coins = tokens[2]
+            self.coins = int(tokens[2])
         elif tokens[1]=="mines":
             #IDx mines 10 BTC
             self.fromID = "coinbase"
             self.toID = tokens[0]
-            self.coins = tokens[2]
+            self.coins = int(tokens[2])
         else:
             #IDx pays IDy 10 BTC
             self.fromID = tokens[0]
             self.toID = tokens[2]
-            self.coins = tokens[3]
+            self.coins = int(tokens[3])
         self.TxnID = self.setID(Txn_msg,timestamp)
         pass
     def setID(self, Txn, timestamp):
         concat_tnx = Txn+" "+str(timestamp)
-        result = hashlib.sha256(concat_tnx)
+        result = hashlib.sha256(concat_tnx.encode('utf-8'))
         return result.hexdigest
     def __repr__(self):
         data = (self.TxnID, self.fromID, self.toID, self.coins)

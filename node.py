@@ -4,7 +4,7 @@ from random import randrange
 import numpy as np
 from event import Event
 class Node:
-    def __init__(self,id,speed,transactions,Tmean_time,Kmean_time):
+    def __init__(self,id,speed,transactions,Tmean_time,Kmean_time,global_time):
         '''
         Intializes the peer with its info
             -peerId
@@ -31,9 +31,9 @@ class Node:
         self.all_block_ids = {}
         self.block_tree = {}
         self.tails={}
-        genesis_block = Block(creater_id=id,hash=0,transactions=transactions)
+        genesis_block = Block(creater_id=id,hash=0,transactions=transactions,timestamp=global_time)
         self.block_tree[genesis_block.getId()] = (genesis_block,1)
-        self.tails[genesis_block.getId()] = (genesis_block,1)
+        self.tails[genesis_block.id] = (genesis_block,1)
         self.curr_mining_time = None
         self.longest_chain = (genesis_block,1)
         pass
@@ -49,8 +49,8 @@ class Node:
         toID = self.id
         while(toID==self.id):
             toID = randrange(N)
-        amount = randrange(1,self.coins+1)
-        Txn_msg = str(self.id)+" pays "+str(toID)+" "+amount+" BTC"
+        amount = randrange(0,self.coins+1)
+        Txn_msg = str(self.id)+" pays "+str(toID)+" "+str(amount)+" BTC"
         evenTime = global_time+np.random.exponential(self.Tmean_time,1)
         Txn = Transaction(Txn_msg,evenTime)
         return Event(evenTime,"Txn",self.id,toID,Txn,self.id)
@@ -66,7 +66,7 @@ class Node:
         if Txn.TxnID in self.all_transaction.keys():
             return
         self.non_verfied_transaction[Txn.TxnID] = Txn
-        self.all_transaction[Txn.TnxID] = 1
+        self.all_transaction[Txn.TxnID] = 1
         tokens = Txn.Txn_msg.split()
         fromID = tokens[0]
         toID = tokens[2]
@@ -89,6 +89,7 @@ class Node:
         return events
         
     def receiveBlock(self,block,global_time):
+        print("Inside receive Block Event")
         #If block already seen, prevent loop
         if block.id in self.all_block_ids.keys():
             return []
@@ -105,7 +106,7 @@ class Node:
                         under_verification_tnx[Txn.fromID] -= Txn.coins
                     else:
                         under_verification_tnx[Txn.fromID] = 0-Txn.coins  
-                if Txn.toId in under_verification_tnx.keys():
+                if Txn.toID in under_verification_tnx.keys():
                         under_verification_tnx[Txn.toID] += Txn.coins
                 else:
                     under_verification_tnx[Txn.toID] = Txn.coins
@@ -122,13 +123,14 @@ class Node:
         #If prev_block_hash is present in tails then
         #replace the tail with block 
         #else create new branch and add block to the leaf
+        print(len(self.tails))
+        self.tails[block.id] = (block,self.tails[block.prev_block_hash][1]+1)
+        print(len(self.tails))
         if block.prev_block_hash in self.tails.keys():
-            self.tails[block.getId()] = (block,self.tails[block.prev_block_hash][1]+1)
             del self.tails[block.prev_block_hash]
-        else:
-            self.tails[block.getId()] = (block,self.tails[block.prev_block_hash][1]+1)
+        print(len(self.tails))
         #If longest_chain has been changed by adding current block
-        if self.longest_chain[1]<self.tails[block.getId()][1]:
+        if self.longest_chain[1]<self.tails[block.id][1]:
             #Create new mining_time in both false and true mining event
             self.curr_mining_time = global_time+np.random.exponential(self.Kmean_time,1)
             #create New mining event for the node as per current mining time
@@ -162,7 +164,7 @@ class Node:
                         Txn_state[Txn.fromID] -= Txn.coins
                     else:
                         Txn_state[Txn.fromID] = 0-Txn.coins  
-                if Txn.toId in Txn_state.keys():
+                if Txn.toID in Txn_state.keys():
                         Txn_state[Txn.toID] += Txn.coins
                 else:
                     Txn_state[Txn.toID] = Txn.coins
@@ -173,6 +175,7 @@ class Node:
         count = 0
         #Find valid transactions to put inside the block
         TxnIDs = self.non_verfied_transaction.keys()
+        size = len(self.non_verfied_transaction)
         for TxnID in TxnIDs:
             count += 1
             Txn = self.non_verfied_transaction[TxnID]
@@ -182,8 +185,11 @@ class Node:
                 Txn_state[Txn.fromID] -= Txn.coins
             Txn_state[Txn.toID] += Txn.coins
             verified_Txns.append(Txn)
-            if count>=900 or len(self.non_verfied_transaction)<=0:
+            if count>=900 or len(self.non_verfied_transaction)<=0 or count>=size:
                 break
+        for Txn in verified_Txns:
+            del self.non_verfied_transaction[Txn.TxnID]
+        verified_Txns.append(Transaction(str(self.id)+" mines 50 BTC",global_time))
         block = Block(self.id,self.longest_chain[0].id,verified_Txns,event.eventTime)
         return self.broadcastBlock(block,global_time,events)
     def broadcastBlock(self,block,global_time,events):

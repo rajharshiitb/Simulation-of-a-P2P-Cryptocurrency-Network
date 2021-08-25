@@ -23,9 +23,9 @@ class Block:
         Calculates the hash of the transactions (Tnx) and use that
         as summary
         '''
-        concat_transaction = self.transactions[0].Tnx_msg
+        concat_transaction = self.transactions[0].Txn_msg
         for trans in self.transactions[1:-1]:
-            concat_transaction += (" "+trans.Tnx_msg)
+            concat_transaction += (" "+trans.Txn_msg)
         result = hashlib.sha256(concat_transaction.encode())
         self.summary = result.hexdigest()
         pass
@@ -35,9 +35,9 @@ class Block:
         and use that as BlockID
         '''
         self.calSummary()
-        concat = self.prev_block_hash
-        concat += (" "+self.summary)
-        result = hashlib.sha256(concat.encode())
+        concat = str(self.prev_block_hash) + " "
+        concat += str(self.summary)
+        result = hashlib.sha256(concat.encode('utf-8'))
         self.id = result.hexdigest()
         pass
     def getId(self):

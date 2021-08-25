@@ -30,16 +30,21 @@ class SimulatorParameter():
                 continue
             elif count==3:
                 mean = line.split()
-                self.Tmean = [int(x) for x in mean]
+                self.Tmean = [float(x) for x in mean]
                 count +=1
                 continue
             elif count==4:
                 mean = line.split()
-                self.Kmean = [int(x) for x in mean]
+                self.Kmean = [float(x) for x in mean]
                 count += 1
                 continue
             elif count==5:
                 self.termination_time = int(line)
                 break
+        print(self.N)
+        print(self.Tmean)
+        print(self.Kmean)
+        print(self.z)
+        print(self.termination_time)
         pass
             
