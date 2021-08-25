@@ -7,9 +7,6 @@ import numpy as np
 class InitializeSimulation():
     def __init__(self, path):
         '''
-            -TODO:
-                1. Create initial Tnx Events
-                2. Create initial Block_mining Events and set the curr_mining_time of each block
             -params: Create an object of SimulatorParameter which is used to read the simulation parameters from config.txt
             -nodes: contains instance of Node class which is peer in the simulation
         '''

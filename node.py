@@ -32,7 +32,7 @@ class Node:
         self.block_tree = {}
         self.tails={}
         genesis_block = Block(creater_id=id,hash=0,transactions=transactions,timestamp=global_time)
-        self.block_tree[genesis_block.getId()] = (genesis_block,1)
+        self.block_tree[genesis_block.id] = (genesis_block,1)
         self.tails[genesis_block.id] = (genesis_block,1)
         self.curr_mining_time = None
         self.longest_chain = (genesis_block,1)
@@ -64,7 +64,7 @@ class Node:
         '''
         events = []
         if Txn.TxnID in self.all_transaction.keys():
-            return
+            return events
         self.non_verfied_transaction[Txn.TxnID] = Txn
         self.all_transaction[Txn.TxnID] = 1
         tokens = Txn.Txn_msg.split()
@@ -89,7 +89,6 @@ class Node:
         return events
         
     def receiveBlock(self,block,global_time):
-        print("Inside receive Block Event")
         #If block already seen, prevent loop
         if block.id in self.all_block_ids.keys():
             return []
@@ -97,6 +96,9 @@ class Node:
         #Verify all transaction stored in the received block
         under_verification_tnx = {} 
         events = []
+        '''
+        Issue: Parent not found
+        '''
         at = self.block_tree[block.prev_block_hash][0]
         while True:
             Txns = at.transactions
@@ -123,12 +125,9 @@ class Node:
         #If prev_block_hash is present in tails then
         #replace the tail with block 
         #else create new branch and add block to the leaf
-        print(len(self.tails))
-        self.tails[block.id] = (block,self.tails[block.prev_block_hash][1]+1)
-        print(len(self.tails))
+        self.tails[block.id] = (block,self.block_tree[block.prev_block_hash][1]+1)
         if block.prev_block_hash in self.tails.keys():
             del self.tails[block.prev_block_hash]
-        print(len(self.tails))
         #If longest_chain has been changed by adding current block
         if self.longest_chain[1]<self.tails[block.id][1]:
             #Create new mining_time in both false and true mining event

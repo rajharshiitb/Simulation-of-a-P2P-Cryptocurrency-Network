@@ -38,7 +38,7 @@ class Block:
         concat = str(self.prev_block_hash) + " "
         concat += str(self.summary)
         result = hashlib.sha256(concat.encode('utf-8'))
-        self.id = result.hexdigest()
+        return result.hexdigest()
         pass
     def getId(self):
         return self.id
