@@ -4,6 +4,7 @@ from random import randrange
 import numpy as np
 from event import Event
 from queue import Queue
+from graphviz import Graph
 class Node:
     def __init__(self,id,speed,transactions,Tmean_time,Kmean_time,global_time):
         '''
@@ -32,11 +33,11 @@ class Node:
         self.all_block_ids = {}
         self.block_tree = {}
         self.tails={}
-        genesis_block = Block(creater_id=id,hash=0,transactions=transactions,timestamp=global_time)
-        self.block_tree[genesis_block.id] = (genesis_block,1)
-        self.tails[genesis_block.id] = (genesis_block,1)
+        self.genesis_block = Block(creater_id=id,hash=0,transactions=transactions,timestamp=global_time)
+        self.block_tree[self.genesis_block.id] = (self.genesis_block,1)
+        self.tails[self.genesis_block.id] = (self.genesis_block,1)
         self.curr_mining_time = None
-        self.longest_chain = (genesis_block,1)
+        self.longest_chain = (self.genesis_block,1)
         self.non_verified_blocks = {}
         pass
     def setMiningTime(self,init_mining_time):
@@ -133,7 +134,7 @@ class Node:
             self.curr_mining_time = global_time+np.random.exponential(self.Kmean_time,1)
             #create New mining event for the node as per current mining time
             events.append(Event(self.curr_mining_time,"Block",self.id,"all",None,self.id))
-            self.longest_chain = self.tails[block.getId()]
+            self.longest_chain = self.tails[block.id]
         #Now broadcast the block to the neighbours 
         return (events,True)
 
@@ -222,6 +223,7 @@ class Node:
         #Find valid transactions to put inside the block
         TxnIDs = self.non_verfied_transaction.keys()
         size = len(self.non_verfied_transaction)
+        valid = 0
         for TxnID in TxnIDs:
             count += 1
             Txn = self.non_verfied_transaction[TxnID]
@@ -231,12 +233,18 @@ class Node:
                 Txn_state[Txn.fromID] -= Txn.coins
             Txn_state[Txn.toID] += Txn.coins
             verified_Txns.append(Txn)
-            if count>=900 or len(self.non_verfied_transaction)<=0 or count>=size:
+            valid +=1
+            if  count>=size or valid>=1000:
                 break
         for Txn in verified_Txns:
             del self.non_verfied_transaction[Txn.TxnID]
         verified_Txns.append(Transaction(str(self.id)+" mines 50 BTC",global_time))
-        block = Block(self.id,self.longest_chain[0].id,verified_Txns,event.eventTime)
+        parent = self.longest_chain[0]
+        lon = self.longest_chain[1]
+        block = Block(self.id,parent.id,verified_Txns,event.eventTime)
+        self.block_tree[block.id] = (block, lon+1)
+        self.longest_chain = (block, lon+1)
+        self.all_block_ids[block.id] = 1
         return self.broadcastBlock(block,global_time,events)
     def broadcastBlock(self,block,global_time,events):
         fromID = block.creater_id
@@ -258,3 +266,36 @@ class Node:
             delay += d_ij
             events.append(Event(global_time+delay,"Block",fromID,toID,block,peer[0]))
         return events    
+    
+    def visualize(self):
+        tree = {}
+        for block_id in self.block_tree.keys():
+            parent_hash = self.block_tree[block_id][0].prev_block_hash
+            if parent_hash not in tree.keys():
+                tree[parent_hash] = {}
+            tree[parent_hash][block_id] = self.block_tree[block_id][0]
+        queue = Queue()
+        queue.put(0)
+        graph = Graph('parent',filename=str(self.id))
+        graph.attr(rankdir='LR',splines='line')
+        count = 0
+        hash = {}
+        while not queue.empty():
+            size = queue.qsize()
+            temp = Graph('child')
+            while size>0:
+                parent_hash = queue.get()
+                for child_id in tree[parent_hash].keys():
+                    temp.node(str(count))
+                    hash[child_id] = str(count)
+                    if parent_hash!=0:
+                        graph.edge(str(count),hash[tree[parent_hash][child_id].prev_block_hash])
+                    count += 1
+                    if child_id in tree.keys():
+                        queue.put(child_id)
+                size -= 1
+            graph.subgraph(temp)
+        graph.view()
+
+
+
