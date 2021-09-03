@@ -30,7 +30,8 @@ class InitializeSimulation():
             peer = randrange(self.params.N)
             while(peer in slowNodes):
                 peer = randrange(self.params.N)
-            slowNodes.append(peer) 
+            slowNodes.append(peer)
+        print(slowNodes) 
         #Create self.params.N nodes in the simulation
         for i in range(self.params.N):
             if i in slowNodes:

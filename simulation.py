@@ -19,6 +19,7 @@ from simInit import InitializeSimulation
 if __name__=="__main__":
     simulator = InitializeSimulation('config.txt')
     while(simulator.params.termination_time>simulator.global_time):
+        print(simulator.global_time)
         event = simulator.q.pop()
         simulator.global_time = event.eventTime
         if event.type=="Txn":
@@ -35,4 +36,6 @@ if __name__=="__main__":
         for each_event in new_events:
             simulator.q.push(each_event)
     for node in simulator.nodes:
-        print(len(node.non_verfied_transaction), len(node.all_transaction), len(node.all_block_ids))
+        print(len(node.non_verfied_transaction), len(node.all_transaction), len(node.block_tree), node.longest_chain[1], len(node.non_verified_blocks.keys()), len(node.all_block_ids.keys()),sep='\t')
+        #print(node.genesis_block.id)
+        node.visualize()
