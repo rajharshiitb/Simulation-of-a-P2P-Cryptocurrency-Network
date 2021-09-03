@@ -5,6 +5,7 @@ import numpy as np
 from event import Event
 from queue import Queue
 from graphviz import Graph
+from pathlib import Path
 class Node:
     def __init__(self,id,speed,transactions,Tmean_time,Kmean_time,global_time):
         '''
@@ -295,7 +296,7 @@ class Node:
                         queue.put(child_id)
                 size -= 1
             graph.subgraph(temp)
-        graph.view()
+        graph.render('results/'+str(self.id), view=True) 
 
 
 
