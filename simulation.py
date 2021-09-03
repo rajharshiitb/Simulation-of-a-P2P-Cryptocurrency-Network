@@ -35,4 +35,4 @@ if __name__=="__main__":
         for each_event in new_events:
             simulator.q.push(each_event)
     for node in simulator.nodes:
-        print(len(node.non_verfied_transaction), len(node.all_transaction), len(node.all_block_ids))
+        print(len(node.non_verfied_transaction), len(node.all_transaction), len(node.block_tree.keys()), node.longest_chain[1])

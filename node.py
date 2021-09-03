@@ -3,6 +3,7 @@ from transaction import Transaction
 from random import randrange
 import numpy as np
 from event import Event
+from queue import Queue
 class Node:
     def __init__(self,id,speed,transactions,Tmean_time,Kmean_time,global_time):
         '''
@@ -36,6 +37,7 @@ class Node:
         self.tails[genesis_block.id] = (genesis_block,1)
         self.curr_mining_time = None
         self.longest_chain = (genesis_block,1)
+        self.non_verified_blocks = {}
         pass
     def setMiningTime(self,init_mining_time):
         self.curr_mining_time = init_mining_time
@@ -87,22 +89,11 @@ class Node:
             delay += d_ij
             events.append(Event(global_time+delay,"Txn",fromID,toID,Txn,peer[0]))
         return events
-        
-    def receiveBlock(self,block,global_time):
-        '''
-        Issue occurs when parent not found. Tackle it
-        '''
-        #If block already seen, prevent loop
-        if block.id in self.all_block_ids.keys():
-            return []
-        self.all_block_ids[block.id] = 1
-        #Verify all transaction stored in the received block
+
+    def verify(self, block,global_time):
         under_verification_tnx = {} 
         events = []
-        '''
-        Issue: Parent not found
-        '''
-        at = self.block_tree[block.prev_block_hash][0]
+        at = block
         while True:
             Txns = at.transactions
             for Txn in Txns:
@@ -123,8 +114,13 @@ class Node:
         for amount in under_verification_tnx.values():
             if amount<0:
                 #Illegal Block
-                return self.broadcastBlock(block,global_time)
+                return ([],False)
+        #delete all txns that are present in the block from non_verified_Txn
+        for txn in block.transactions:
+            if txn.TxnID in self.non_verfied_transaction.keys():
+                del self.non_verfied_transaction[txn.TxnID]
         #Now that we have verified the block, add the block in the block_tree
+        self.block_tree[block.id] = (block, self.block_tree[block.prev_block_hash][1]+1)
         #If prev_block_hash is present in tails then
         #replace the tail with block 
         #else create new branch and add block to the leaf
@@ -139,8 +135,55 @@ class Node:
             events.append(Event(self.curr_mining_time,"Block",self.id,"all",None,self.id))
             self.longest_chain = self.tails[block.getId()]
         #Now broadcast the block to the neighbours 
-        return self.broadcastBlock(block,global_time,events)
-        pass
+        return (self.broadcastBlock(block,global_time,events),True)
+
+    def receiveBlock(self,block,global_time):
+        '''
+        Issue: Parent not found
+        Too many not added in tree bcz parent not there
+        When parent received and parent itself is not valid
+            Discard all the children
+        when parent is valid
+            Then recursively find all child blocks which are valid
+        Type of storage:
+            1. block_tree: dict <block_id: <block_obj, len>>
+            2. non_verified_blocks: dict <block.prev_block_hash: dict <block_id: block_obj>>
+                searching time O(1)
+                 -g
+                a-h-k
+                 -i
+                K came
+                 
+                h came
+                {a_hash: h_obj}
+        '''
+        #If block already seen, prevent loop
+        if block.id in self.all_block_ids.keys():
+            return []
+        self.all_block_ids[block.id] = 1
+        #Check if parent of the block is in the block tree or not
+        parent_hash = block.prev_block_hash
+        if parent_hash not in self.block_tree.keys():
+            if parent_hash not in self.non_verified_blocks.keys():
+                self.non_verified_blocks[parent_hash] = {}
+            self.non_verified_blocks[parent_hash][block.id] = block
+            #return empty event list
+            return []
+        #Now if the parent of the block present in the block_tree then recursively verify all
+        #the children too
+        q = Queue()
+        q.put(block)
+        events = []
+        while(not q.empty()):
+            curr_block = q.get()
+            result = self.verify(curr_block,global_time)
+            if result[1]:
+                #Means block was legal
+                events.extend(result[0])
+                if curr_block.id in self.non_verified_blocks.keys():
+                    for child_id in self.non_verified_blocks[curr_block.id].keys():
+                        q.put(self.non_verified_blocks[curr_block.id][child_id])
+        return events
     def generateBlock(self,event,global_time):
         #If curr_mine_time != event.eventTime then it means node recerived block before it's own mining can be finished and hence started POW again
         #In this case just return, as this is false mining event
@@ -209,10 +252,8 @@ class Node:
                 c_ij = 100*1e6
             else:
                 c_ij = 5*1e6
-            delay += (1000/c_ij)*1000 #in milliseconds
+            delay += (1000000/c_ij)*1000 #in milliseconds
             d_ij = np.random.exponential(((96*1000)/c_ij),1)*1000 #in milliseconds
             delay += d_ij
             events.append(Event(global_time+delay,"Block",fromID,toID,block,peer[0]))
-        return events
-        pass
-    
+        return events    
