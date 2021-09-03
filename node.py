@@ -135,7 +135,7 @@ class Node:
             events.append(Event(self.curr_mining_time,"Block",self.id,"all",None,self.id))
             self.longest_chain = self.tails[block.getId()]
         #Now broadcast the block to the neighbours 
-        return (self.broadcastBlock(block,global_time,events),True)
+        return (events,True)
 
     def receiveBlock(self,block,global_time):
         '''
@@ -168,7 +168,7 @@ class Node:
                 self.non_verified_blocks[parent_hash] = {}
             self.non_verified_blocks[parent_hash][block.id] = block
             #return empty event list
-            return []
+            return self.broadcastBlock(block,global_time,[])
         #Now if the parent of the block present in the block_tree then recursively verify all
         #the children too
         q = Queue()
@@ -183,7 +183,8 @@ class Node:
                 if curr_block.id in self.non_verified_blocks.keys():
                     for child_id in self.non_verified_blocks[curr_block.id].keys():
                         q.put(self.non_verified_blocks[curr_block.id][child_id])
-        return events
+                    del self.non_verified_blocks[curr_block.id]
+        return self.broadcastBlock(block,global_time,events)
     def generateBlock(self,event,global_time):
         #If curr_mine_time != event.eventTime then it means node recerived block before it's own mining can be finished and hence started POW again
         #In this case just return, as this is false mining event
