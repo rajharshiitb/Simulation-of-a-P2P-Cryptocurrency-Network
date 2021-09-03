@@ -1,3 +1,4 @@
+from pathlib import Path
 from transaction import Transaction
 from node import Node
 from parameters import SimulatorParameter
@@ -75,4 +76,6 @@ class InitializeSimulation():
             #create New mining event for the node as per current mining time
             self.q.push(Event(mining_time,"Block",id,"all",None,id))
             self.nodes[id].setMiningTime(mining_time)
+        #Create folder for results
+        Path("results").mkdir(parents=True, exist_ok=True)
         pass
