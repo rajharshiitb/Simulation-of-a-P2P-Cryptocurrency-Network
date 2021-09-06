@@ -32,7 +32,7 @@ class InitializeSimulation():
             while(peer in slowNodes):
                 peer = randrange(self.params.N)
             slowNodes.append(peer)
-        print(slowNodes) 
+        print("Slow Nodes: ",slowNodes,sep=" ") 
         #Create self.params.N nodes in the simulation
         for i in range(self.params.N):
             if i in slowNodes:
@@ -78,4 +78,5 @@ class InitializeSimulation():
             self.nodes[id].setMiningTime(mining_time)
         #Create folder for results
         Path("results").mkdir(parents=True, exist_ok=True)
+        Path("timings").mkdir(parents=True, exist_ok=True)
         pass

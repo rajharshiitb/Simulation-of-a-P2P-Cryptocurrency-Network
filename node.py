@@ -40,6 +40,7 @@ class Node:
         self.curr_mining_time = None
         self.longest_chain = (self.genesis_block,1)
         self.non_verified_blocks = {}
+        self.timings = {}#block_id : arrival/creation time
         pass
     def setMiningTime(self,init_mining_time):
         self.curr_mining_time = init_mining_time
@@ -163,6 +164,7 @@ class Node:
         if block.id in self.all_block_ids.keys():
             return []
         self.all_block_ids[block.id] = 1
+        self.timings[block.id] = global_time
         #Check if parent of the block is in the block tree or not
         parent_hash = block.prev_block_hash
         if parent_hash not in self.block_tree.keys():
@@ -244,6 +246,7 @@ class Node:
         lon = self.longest_chain[1]
         block = Block(self.id,parent.id,verified_Txns,event.eventTime)
         self.block_tree[block.id] = (block, lon+1)
+        self.timings[block.id] = global_time
         self.longest_chain = (block, lon+1)
         self.all_block_ids[block.id] = 1
         return self.broadcastBlock(block,global_time,events)
@@ -297,6 +300,13 @@ class Node:
                 size -= 1
             graph.subgraph(temp)
         graph.render('results/'+str(self.id), view=True) 
+
+    def saveTime(self):
+        file = open("timings/"+str(self.id)+"file.txt",'w');
+        for keys in self.timings.keys():
+            obj = str(keys) +": "+str(self.timings[keys])+"\n"
+            file.write(obj)
+        file.close()
 
 
 
