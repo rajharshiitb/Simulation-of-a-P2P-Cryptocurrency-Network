@@ -41,6 +41,8 @@ class Node:
         self.longest_chain = (self.genesis_block,1)
         self.non_verified_blocks = {}
         self.timings = {}#block_id : arrival/creation time
+        self.cur_mining_branch = self.genesis_block.id
+        self.genesis_block_id = self.genesis_block.id
         pass
     def setMiningTime(self,init_mining_time):
         self.curr_mining_time = init_mining_time
@@ -137,8 +139,30 @@ class Node:
             #create New mining event for the node as per current mining time
             events.append(Event(self.curr_mining_time,"Block",self.id,"all",None,self.id))
             self.longest_chain = self.tails[block.id]
+            self.cur_mining_branch = block.id
         #Now broadcast the block to the neighbours 
         return (events,True)
+
+    def restoreTxn(self, curr_mining_branch, prev_mining_branch):
+        #Ensure that Txn present in old mining chain and not 
+        #present in new minning chain is added to Txn pool
+        Txn_in_new_branch = {}
+        Txn_in_old_branch = {}
+        while curr_mining_branch != self.genesis_block_id:
+            block = self.block_tree[curr_mining_branch][0]
+            for txn in block.transactions:
+                Txn_in_new_branch[txn.TxnID] = txn
+            curr_mining_branch = block.prev_block_hash
+        while prev_mining_branch != self.genesis_block_id:
+            block = self.block_tree[prev_mining_branch][0]
+            for txn in block.transactions:
+                Txn_in_old_branch[txn.TxnID] = txn
+            prev_mining_branch = block.prev_block_hash
+        for TxnID in Txn_in_new_branch.keys():
+            if TxnID not in Txn_in_old_branch.keys():
+                self.non_verfied_transacton[TxnID] = Txn_in_new_branch[TxnID]
+        return
+        
 
     def receiveBlock(self,block,global_time):
         '''
@@ -178,6 +202,8 @@ class Node:
         q = Queue()
         q.put(block)
         events = []
+        self.non_verfied_transacton = {}
+        prev_mining_branch = self.cur_mining_branch
         while(not q.empty()):
             curr_block = q.get()
             result = self.verify(curr_block,global_time)
@@ -188,6 +214,12 @@ class Node:
                     for child_id in self.non_verified_blocks[curr_block.id].keys():
                         q.put(self.non_verified_blocks[curr_block.id][child_id])
                     del self.non_verified_blocks[curr_block.id]
+
+        #If Mining Branch Changed
+        if self.cur_mining_branch != prev_mining_branch:
+            if self.block_tree[self.cur_mining_branch][0].prev_block_hash != prev_mining_branch:
+                self.restoreTxn(self.cur_mining_branch, prev_mining_branch)
+        #return list of new events
         return self.broadcastBlock(block,global_time,events)
     def generateBlock(self,event,global_time):
         #If curr_mine_time != event.eventTime then it means node recerived block before it's own mining can be finished and hence started POW again
